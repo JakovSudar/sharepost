@@ -95,8 +95,24 @@
                 if(empty($data['password'])){
                     $data['password_error']='Please enter password';
                 }
+                if($this->userModel->findUserByEmail($data['email'])){
+                    //user found by email
+                } else{
+                    $data['email_error'] = 'No user found';
+                }
+                //provjera errora
                 if(empty($data['email_error'])&&empty($data['password_error'])){
-                    die('SUCCESS');
+                    //chechk and set logged in user
+                    $loggedInUser = $this->userModel->login($data['email'],$data['password']);
+                    
+                    if($loggedInUser){
+                        //create session
+                        die('SUCCES logg');
+                    }else{
+                        $data['password_error'] = 'Incorrect password';
+                        $this->view('users/login',$data);
+                    }
+                
                 }else{
                     $this->view('users/login',$data);
                 }
