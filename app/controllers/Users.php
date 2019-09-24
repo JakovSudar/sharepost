@@ -1,6 +1,7 @@
 <?php
     class Users extends Controller{
         public function __construct(){
+            $this->userModel = $this->model('User');
 
         }
         public function register(){
@@ -24,7 +25,11 @@
                 //validation
                 if(empty($data['email'])){
                     $data['email_error']='Please enter email';
-                }  
+                }else{
+                   if($this->userModel->findUserByEmail($data['email'])){
+                    $data['email_error']='Email is already used';
+                   }
+                }
                 if(empty($data['name'])){
                     $data['name_error']='Please enter name';
                 } 
@@ -41,7 +46,15 @@
                     }
                 }  
                 if(empty($data['email_error'])&&empty($data['name_error'])&&empty($data['password_error'])&&empty($data['confirm_password_error'])){
-                    die('SUCCESS');
+                    
+                    $data['password'] = password_hash($data['password'],PASSWORD_DEFAULT);
+
+                    if($this->userModel->register($data)){
+                        redirect('users/login');
+                    }else{
+                        die('Something went wrong');
+                    }
+
                 }else{
                     $this->view('users/register',$data);
                 }
@@ -73,10 +86,8 @@
                     'password' =>trim($_POST['password']),                                     
                     'email_error' => '',
                     'password_error' => ''                    
-                ];    
-
-
-                //validation     
+                ];   
+              //validation     
                 if(empty($data['email'])){
                     $data['email_error']='Please enter email';
                 }  
@@ -89,14 +100,12 @@
                     $this->view('users/login',$data);
                 }
             }else
-            {
-                //init data
+            {               
                 $data=[                    
                     'email' =>'',
                     'password' =>'',                     
                     'email_error' => '',
-                    'password_error' => ''
-                    
+                    'password_error' => ''                    
                 ];
                 //Load view
                 $this->view('users/login',$data);
